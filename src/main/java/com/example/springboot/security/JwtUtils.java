@@ -1,5 +1,6 @@
 package com.example.springboot.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -34,15 +37,32 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token){
+    public Claims getClaims(String token){
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
     }
 
+    public String getUsername(String token){
+        return getClaims(token).getSubject();
+    }
+
+    public Set<String> getRoles (String token){
+        List<String> roles = getClaims(token).get("roles", List.class);
+        return new HashSet<>(roles);
+    }
+
+//    public String getUsernameFromToken(String token){
+//        return Jwts.parserBuilder()
+//                .setSigningKey(getSigningKey())
+//                .build()
+//                .parseClaimsJws(token)
+//                .getBody()
+//                .getSubject();
+//    }
+//
     public boolean validateToken(String token){
         try {
             Jwts.parserBuilder()

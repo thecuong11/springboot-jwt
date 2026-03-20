@@ -58,9 +58,13 @@ public class UserService {
             throw new RuntimeException("Invalid password");
         }
 
-        Set<String> roles = user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
+//        Set<String> roles = user.getRoles().stream()
+//                .map(Role::getName)
+//                .collect(Collectors.toSet());
+        Set<String> roles = user.getRoles() == null ? new HashSet<>() :
+                user.getRoles().stream()
+                        .map(Role::getName)
+                        .collect(Collectors.toSet());
 
         return jwtUtils.generateToken(user.getUsername(), roles);
     }
