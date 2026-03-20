@@ -54,15 +54,6 @@ public class JwtUtils {
         return new HashSet<>(roles);
     }
 
-//    public String getUsernameFromToken(String token){
-//        return Jwts.parserBuilder()
-//                .setSigningKey(getSigningKey())
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody()
-//                .getSubject();
-//    }
-//
     public boolean validateToken(String token){
         try {
             Jwts.parserBuilder()
@@ -71,7 +62,6 @@ public class JwtUtils {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
-            // Token invalid, expired, or malformed
             return false;
         }
     }

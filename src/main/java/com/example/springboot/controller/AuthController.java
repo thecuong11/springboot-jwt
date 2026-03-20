@@ -18,6 +18,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request){
+        System.out.println("vao");
         userService.register(request);
         return ResponseEntity.ok("User register successfully");
     }
@@ -29,8 +30,10 @@ public class AuthController {
     }
 
     @GetMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public String adminAccess() {
+
+        System.out.println("vaooo");
         return "Hello Admin!";
     }
 }

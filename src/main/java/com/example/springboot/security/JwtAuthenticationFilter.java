@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,41 +24,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
 
-
-//    @Override
-//    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-//        HttpServletRequest req = (HttpServletRequest) servletRequest;
-//        String header = req.getHeader("Authorization");
-//
-//        if (header != null && header.startsWith("Bearer ")){
-//            String token = header.substring(7);
-//
-//            if (jwtUtils.validateToken(token)){
-//                String username = jwtUtils.getUsernameFromToken(token);
-//
-//                SecurityContextHolder.getContext().setAuthentication(
-//                        new UsernamePasswordAuthenticationToken(username, null, null)
-//                );
-//            }
-//        }
-//
-//        filterChain.doFilter(servletRequest, servletResponse);
-//    }
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/auth/register",
+            "/api/auth/login"
+    };
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        final String authHeader = req.getHeader("Authorization");
+
+        String path = request.getServletPath();
+
+        for (String publicEndpoint : PUBLIC_ENDPOINTS){
+            if (path.equals(publicEndpoint)){
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
+
+        final String authHeader = request.getHeader("Authorization");
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Missing or invalid Authorization header");
             return;
         }
 
         String token =  authHeader.substring(7);
+
         try{
             Claims claims = jwtUtils.getClaims(token);
             String username = claims.getSubject();
+
             List<String> roles = claims.get("roles", List.class);
+            if (roles == null){
+                roles = Collections.emptyList();
+            }
 
             List<GrantedAuthority> authorities = roles.stream()
                     .map(SimpleGrantedAuthority::new)
@@ -67,9 +68,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
         } catch (Exception e) {
-
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid JWT token: " + e.getMessage());
+            return;
         }
 
-        filterChain.doFilter(req,response);
+        filterChain.doFilter(request,response);
     }
 }

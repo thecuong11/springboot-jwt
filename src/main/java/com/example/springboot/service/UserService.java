@@ -2,20 +2,20 @@ package com.example.springboot.service;
 
 import com.example.springboot.dto.LoginRequest;
 import com.example.springboot.dto.RegisterRequest;
-import com.example.springboot.dto.UserDTO;
 import com.example.springboot.entity.Role;
 import com.example.springboot.entity.User;
-import com.example.springboot.exception.NotFoundException;
 import com.example.springboot.repository.RoleRepository;
 import com.example.springboot.repository.UserRepository;
 import com.example.springboot.security.JwtUtils;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,6 +26,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final AuthenticationManager authenticationManager;
 
     public void register(RegisterRequest request){
         if (userRepository.findByUsername(request.username()).isPresent()){
@@ -51,21 +52,16 @@ public class UserService {
     }
 
     public String login(LoginRequest request){
-        User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())){
-            throw new RuntimeException("Invalid password");
-        }
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+        );
 
-//        Set<String> roles = user.getRoles().stream()
-//                .map(Role::getName)
-//                .collect(Collectors.toSet());
-        Set<String> roles = user.getRoles() == null ? new HashSet<>() :
-                user.getRoles().stream()
-                        .map(Role::getName)
-                        .collect(Collectors.toSet());
+        String username = auth.getName();
+        Set<String> roles = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
 
-        return jwtUtils.generateToken(user.getUsername(), roles);
+        return jwtUtils.generateToken(username, roles);
     }
 }
