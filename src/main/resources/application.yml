@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/testdb?serverTimezone=UTC
+    username: root
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+jwt:
+  secret: MySuperSecretKey1234567890123456gkdfkgjfkdjgkdfjgdfkgfdkjgkfdjkgjkfdjgkdfjgk
+  expirationMs: 3600000
+
+server:
+  port: 8080

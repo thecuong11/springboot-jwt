@@ -6,7 +6,6 @@ import com.example.springboot.dto.RegisterRequest;
 import com.example.springboot.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -27,13 +26,5 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
         String token = userService.login(request);
         return ResponseEntity.ok(new LoginResponse(token));
-    }
-
-    @GetMapping("/admin")
-    @PreAuthorize("hasRole('USER')")
-    public String adminAccess() {
-
-        System.out.println("vaooo");
-        return "Hello Admin!";
     }
 }
