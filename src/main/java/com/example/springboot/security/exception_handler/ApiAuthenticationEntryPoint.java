@@ -21,10 +21,6 @@ public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
-//        ResponseDto<?> responseError = new ResponseDto<>();
-//        responseError.setStatus(Constant.ERROR);
-//        responseError.setMessage(HttpStatus.UNAUTHORIZED.getReasonPhrase());
-//        responseError.setCode(MessageEnum.ERR_APPLICATION.getCode());
         var responseError = new HashMap<>();
         responseError.put("message", HttpStatus.UNAUTHORIZED.getReasonPhrase());
 

@@ -45,24 +45,4 @@ public class JwtUtils {
                 .getBody();
     }
 
-    public String getUsername(String token){
-        return getClaims(token).getSubject();
-    }
-
-    public Set<String> getRoles (String token){
-        List<String> roles = getClaims(token).get("roles", List.class);
-        return new HashSet<>(roles);
-    }
-
-    public boolean validateToken(String token){
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (JwtException e) {
-            return false;
-        }
-    }
 }

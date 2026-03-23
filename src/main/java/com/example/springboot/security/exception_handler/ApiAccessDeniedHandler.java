@@ -22,10 +22,6 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.FORBIDDEN.value());
 
-//        ResponseDto<?> responseError = new ResponseDto<>();
-//        responseError.setStatus(Constant.ERROR);
-//        responseError.setMessage(HttpStatus.FORBIDDEN.getReasonPhrase());
-//        responseError.setCode(MessageEnum.ERR_APPLICATION.getCode());
         var responseError = new HashMap<>();
         responseError.put("message", HttpStatus.FORBIDDEN.getReasonPhrase());
 

@@ -27,22 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
 
-    private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/auth/register",
-            "/api/auth/login"
-    };
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-//        String path = request.getServletPath();
-//        for (String publicEndpoint : PUBLIC_ENDPOINTS){
-//            if (path.equals(publicEndpoint)){
-//                filterChain.doFilter(request, response);
-//                return;
-//            }
-//        }
-        // thay đoạn code trên bằng cách Override lại hàm shouldNotFilter của OncePerRequestFilter
 
         final String authHeader = request.getHeader("Authorization");
 
@@ -81,7 +67,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String requestPath = request.getRequestURI();
+        String requestPath = request.getServletPath();
+        System.out.println("request path: " + requestPath);
         // nếu requestPath khớp pattern với ít nhất 1 path trong WHITE_LIST_API thì không chạy vào doFilterInternal
         return Arrays.stream(SecurityConfig.WHITE_LIST_API).anyMatch(e -> pathMatcher.match(e, requestPath));
     }

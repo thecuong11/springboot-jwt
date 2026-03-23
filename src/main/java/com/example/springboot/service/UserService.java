@@ -4,6 +4,8 @@ import com.example.springboot.dto.LoginRequest;
 import com.example.springboot.dto.RegisterRequest;
 import com.example.springboot.entity.Role;
 import com.example.springboot.entity.User;
+import com.example.springboot.exception.custom.RoleNotFoundException;
+import com.example.springboot.exception.custom.UsernameAlreadyExistsException;
 import com.example.springboot.repository.RoleRepository;
 import com.example.springboot.repository.UserRepository;
 import com.example.springboot.security.JwtUtils;
@@ -30,7 +32,7 @@ public class UserService {
 
     public void register(RegisterRequest request){
         if (userRepository.findByUsername(request.username()).isPresent()){
-            throw new RuntimeException("Username already exists");
+            throw new UsernameAlreadyExistsException(request.username());
         }
 
         Set<Role> userRoles = new HashSet<>();
@@ -38,7 +40,7 @@ public class UserService {
         if (request.roles() != null){
             request.roles().forEach(roleName -> {
                 Role role = roleRepository.findByName(roleName)
-                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                        .orElseThrow(() -> new RoleNotFoundException(roleName));
                 userRoles.add(role);
             });
         }
