@@ -1,4 +1,7 @@
 package com.example.springboot.dto;
 
-public record LoginResponse(String token) {
+public record LoginResponse(String accessToken, String refreshToken, String tokenType) {
+    public LoginResponse(String accessToken, String refreshToken){
+        this(accessToken, refreshToken, "Bearer");
+    }
 }

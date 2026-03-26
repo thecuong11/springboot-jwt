@@ -11,6 +11,7 @@ spring:
 jwt:
   secret: MySuperSecretKey1234567890123456gkdfkgjfkdjgkdfjgdfkgfdkjgkfdjkgjkfdjgkdfjgk
   expirationMs: 3600000
+  refresh-expiration: 604800000
 
 server:
   port: 8080
