@@ -6,6 +6,7 @@ import com.example.springboot.dto.RegisterRequest;
 import com.example.springboot.entity.RefreshToken;
 import com.example.springboot.service.RefreshTokenService;
 import com.example.springboot.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request){
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request){
         userService.register(request);
         return ResponseEntity.ok("User register successfully");
     }
@@ -45,5 +46,11 @@ public class AuthController {
         String newAccessToken = userService.generateTokenFromUsername(refreshToken.getUser().getUsername());
 
         return ResponseEntity.ok(new LoginResponse(newAccessToken, requestToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader){
+        userService.logout(authHeader);
+        return ResponseEntity.noContent().build();
     }
 }

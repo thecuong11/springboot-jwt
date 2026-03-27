@@ -1,5 +1,6 @@
 package com.example.springboot.security;
 
+import com.example.springboot.repository.InvalidatedTokenRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
+    private final InvalidatedTokenRepository invalidatedTokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -39,6 +41,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
+        String jti = jwtUtils.extractJti(token);
+        if (invalidatedTokenRepository.existsById(jti)){
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been invalidated");
+            return;
+        }
+
         try {
             Claims claims = jwtUtils.getClaims(token);
             String username = claims.getSubject();
@@ -47,11 +55,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (roles == null) {
                 roles = Collections.emptyList();
             }
-
+            System.out.println(claims.get("roles"));
             List<GrantedAuthority> authorities = roles.stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
-
             var authToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authToken);
         } catch (Exception e) {

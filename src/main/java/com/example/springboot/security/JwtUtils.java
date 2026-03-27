@@ -9,10 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Function;
 
 @Component
 public class JwtUtils {
@@ -29,6 +28,7 @@ public class JwtUtils {
 
     public String generateToken(String username, Set<String> roles){
         return Jwts.builder()
+                .setId(UUID.randomUUID().toString())
                 .setSubject(username)
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
@@ -43,6 +43,18 @@ public class JwtUtils {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver){
+        return claimsResolver.apply(getClaims(token));
+    }
+
+    public String extractJti(String token){
+        return extractClaim(token, Claims::getId);
+    }
+
+    public Instant extractExpiry(String token) {
+        return extractClaim(token, Claims::getExpiration).toInstant();
     }
 
 }

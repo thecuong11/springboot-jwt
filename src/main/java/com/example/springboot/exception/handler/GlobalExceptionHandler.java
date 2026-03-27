@@ -1,19 +1,34 @@
 package com.example.springboot.exception.handler;
 
-import com.example.springboot.exception.custom.NotFoundException;
 import com.example.springboot.exception.custom.RoleNotFoundException;
 import com.example.springboot.exception.custom.UsernameAlreadyExistsException;
 import com.example.springboot.exception.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    public ResponseEntity<?> handleNotFound(NotFoundException exception) {
-        return ResponseEntity.status(404).body(exception.getMessage());
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException exception) {
+        Map<String, String> fieldErrors = exception.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        FieldError::getDefaultMessage,
+                        (existing, duplicate) -> existing,
+                        LinkedHashMap::new
+                ));
+
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse("Validation failed", 400, fieldErrors));
     }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)

@@ -2,10 +2,12 @@ package com.example.springboot.service;
 
 import com.example.springboot.dto.LoginRequest;
 import com.example.springboot.dto.RegisterRequest;
+import com.example.springboot.entity.InvalidatedToken;
 import com.example.springboot.entity.Role;
 import com.example.springboot.entity.User;
 import com.example.springboot.exception.custom.RoleNotFoundException;
 import com.example.springboot.exception.custom.UsernameAlreadyExistsException;
+import com.example.springboot.repository.InvalidatedTokenRepository;
 import com.example.springboot.repository.RoleRepository;
 import com.example.springboot.repository.UserRepository;
 import com.example.springboot.security.JwtUtils;
@@ -18,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +34,7 @@ public class UserService {
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService customUserDetailsService;
+    private final InvalidatedTokenRepository invalidatedTokenRepository;
 
     public void register(RegisterRequest request){
         if (userRepository.findByUsername(request.username()).isPresent()){
@@ -77,5 +81,17 @@ public class UserService {
                 .collect(Collectors.toSet());
 
         return jwtUtils.generateToken(username, roles);
+    }
+
+    public void logout(String authHeader){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")){
+            throw new RuntimeException("Invalid token");
+        }
+
+        String token = authHeader.substring(7);
+        String jti = jwtUtils.extractJti(token);
+        Instant expiry = jwtUtils.extractExpiry(token);
+
+        invalidatedTokenRepository.save(new InvalidatedToken(jti, expiry));
     }
 }
